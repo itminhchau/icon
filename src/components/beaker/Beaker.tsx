@@ -2,13 +2,17 @@ import React, { useMemo, useState } from "react";
 import "./Beaker.css";
 
 interface BeakerProps {}
+interface Iitem {
+  id: number;
+  title: string | number;
+}
 
 const Beaker: React.FC<BeakerProps> = () => {
   const min = 0;
-  const max = 1000;
-  const step = 200;
+  const max = 100;
+  const step = 10;
+  const smallStep = 5;
   const heightWater = 250;
-  const smStep = 50;
   const [water, setWater] = useState<number>(min);
 
   const handleTemperatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -17,20 +21,48 @@ const Beaker: React.FC<BeakerProps> = () => {
     setWater(Number(e.target.value));
   };
 
-  const list = useMemo(() => {
-    let value: number = 0;
-    const newList = [...Array(max / step + 1)].map((item) => {
-      const object = {
-        id: Math.random(),
-        title: value,
-      };
-      value = value + step;
-      return object;
-    });
-    return newList;
-  }, [min, max, step]);
+  /* xxxxxxxx */
+  interface Item {
+    id: number;
+    title: string;
+  }
 
-  const array = [1, 2, 3, 4];
+  const itemFake: Item = {
+    id: Math.random(),
+    title: "-",
+  };
+  const lastedItem: Item[] = [];
+
+  const getItemFakes = (step: number, smallStep: number): Item[] => {
+    const items: Item[] = [];
+    for (let i = 1; i < step / smallStep; i++) {
+      items.push(itemFake);
+    }
+    return items;
+  };
+
+  const handleItem = (
+    max: number,
+    min: number,
+    step: number,
+    smallStep: number
+  ): Item[] => {
+    const items: Item[] = [];
+    for (let i = 0; i <= max - min; i += step) {
+      items.push({ id: Math.random(), title: (i + min).toString() });
+    }
+
+    items.forEach((item) => {
+      if (item.title === max.toString()) {
+        lastedItem.push(item);
+      } else {
+        lastedItem.push(item, ...getItemFakes(step, smallStep));
+      }
+    });
+    console.log(lastedItem);
+    return lastedItem;
+  };
+
   return (
     <div className="container">
       <div className="top">
@@ -56,37 +88,29 @@ const Beaker: React.FC<BeakerProps> = () => {
           style={{
             display: "flex",
             flexDirection: "column-reverse",
-            gap: heightWater / (max / step) - 16,
             width: "fit-content",
             position: "absolute",
-            height: max,
-            bottom: 14,
+            height: heightWater,
+            bottom: 20,
             left: "50%",
             zIndex: 110,
           }}
         >
-          {list &&
-            list.map((item) => {
-              return (
-                <>
-                  <span style={{ fontSize: "12.5px", fontWeight: "bold" }}>
-                    <span style={{ fontWeight: "bold" }}>-</span>
-                    {item.title}
-                  </span>
-                  {/* {array &&
-                    array.map((item, index) => {
-                      return <span>-</span>;
-                    })} */}
-                </>
-              );
-            })}
+          {handleItem(1000, 0, 200, 100).map((item) => {
+            return (
+              <span style={{ fontSize: "12.5px", fontWeight: "bold" }}>
+                <span style={{ fontWeight: "bold" }}>-</span>
+                {item.title}
+              </span>
+            );
+          })}
         </div>
       </div>
       <input
         type="range"
         min={min}
         max={max}
-        step={smStep}
+        step={smallStep}
         value={water}
         onChange={handleTemperatureChange}
         className="progress"
